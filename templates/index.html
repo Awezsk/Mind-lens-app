@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Analysis App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-4">Workspace Analysis App</h1>
+        <form id="upload-form" class="mb-8">
+            <div class="mb-4">
+                <label for="image-upload" class="block text-sm font-medium text-gray-700">Choose an image</label>
+                <input type="file" id="image-upload" name="file" accept=".png,.jpg,.jpeg" class="mt-1 block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100
+                ">
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Analyze Workspace
+            </button>
+        </form>
+        <div id="loading" class="hidden">
+            <p class="text-lg">Analyzing your workspace... Please wait.</p>
+        </div>
+        <div id="error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong class="font-bold">Error!</strong>
+            <span id="error-message" class="block sm:inline"></span>
+        </div>
+        <div id="results" class="hidden">
+            <h2 class="text-2xl font-semibold mb-4">Analysis Results</h2>
+            <div id="object-count" class="mb-4"></div>
+            <div id="back-support" class="mb-4"></div>
+            <div id="screen-distance" class="mb-4"></div>
+            <div id="image-container" class="mt-4">
+                <h3 class="text-xl font-semibold mb-2">Analyzed Image</h3>
+                <img id="analyzed-image" class="max-w-full h-auto border-2 border-gray-300 rounded" alt="Analyzed Workspace">
+            </div>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('upload-form');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorDiv = document.getElementById('error');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            // Show loading, hide results and error
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = error.message || 'An unexpected error occurred.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+
+        function displayResults(data) {
+            results.classList.remove('hidden');
+            
+            // Display object count
+            const objectCountHtml = `
+                <h3 class="text-xl font-semibold mb-2">Object Count</h3>
+                <ul class="list-disc pl-5">
+                    ${Object.entries(data.object_count).map(([key, value]) => `<li>${key}: ${value}</li>`).join('')}
+                </ul>
+            `;
+            document.getElementById('object-count').innerHTML = objectCountHtml;
+
+            // Display back support
+            const backSupportHtml = `
+                <h3 class="text-xl font-semibold mb-2">Back Support</h3>
+                <ul class="list-disc pl-5">
+                    ${Object.entries(data.back_support).map(([key, value]) => `<li>${key}: ${value}</li>`).join('')}
+                </ul>
+            `;
+            document.getElementById('back-support').innerHTML = backSupportHtml;
+
+            // Display screen distance
+            document.getElementById('screen-distance').innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">Screen Distance</h3>
+                <p>${data.screen_distance}</p>
+            `;
+
+            // Display analyzed image
+            const analyzedImage = document.getElementById('analyzed-image');
+            if (data.analyzed_image_url) {
+                analyzedImage.src = data.analyzed_image_url;
+                analyzedImage.alt = "Analyzed Workspace";
+                document.getElementById('image-container').classList.remove('hidden');
+            } else {
+                document.getElementById('image-container').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
