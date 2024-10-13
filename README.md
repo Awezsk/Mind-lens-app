@@ -16,7 +16,7 @@ This is a web-based application that uses machine learning to analyze workspace 
 
 1. **Clone the Repository**
    ```
-   git clone https://github.com/yourusername/workspace-analysis-app.git
+   https://github.com/Awezsk/Mind-lens-app.git
    cd workspace-analysis-app
    ```
 
