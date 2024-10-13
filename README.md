@@ -100,6 +100,9 @@ workspace-analysis-app/
 4. Push to the branch (`git push origin feature-branch`).
 5. Create a new Pull Request.
 
+##Output Example for one of the image
+![Alt Text](images/workspace-example.png)
+
 ## License
 
 This project is licensed under the MIT License.
